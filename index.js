@@ -23,8 +23,10 @@ require("dotenv").config()
 const app = express()
 const port = process.env.PORT || 8080
 const corsOptions = {
-    origin: ["http://localhost:5173"],
-    credentials: true
+    origin: "https://dswap-frontend.vercel.app",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
 }
 
 
