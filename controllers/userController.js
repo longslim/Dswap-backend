@@ -111,6 +111,13 @@ const generateExpiryDate = async () => {
 
 const signupUser = async(req, res) => {
     try {
+
+      if (req.fileValidationError) {
+        return res.status(400).json({
+          success: false,
+          message: req.fileValidationError,
+        });
+      }
         const {firstname, lastname, email, dob, mobileNo, address, ssn, idType, password} = req.body
 
         if(!firstname || !lastname || !email || !dob || !mobileNo || !address || !ssn || !idType || !password){
@@ -147,6 +154,7 @@ const signupUser = async(req, res) => {
         if (!parsedDate.isValid()) {
             throw new Error("Invalid date format. Use DD-MM-YYYY, MM-DD-YYYY, or YYYY-MM-DD")
         }
+        
 
         const frontIdPath = req.files?.frontId ? req.files.frontId[0].path : null
         const backIdPath = req.files?.backId ? req.files.backId[0].path : null

@@ -30,10 +30,7 @@ const corsOptions = {
 }
 
 
-const uploadDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
+
 
 
 app.use(cors(corsOptions))
