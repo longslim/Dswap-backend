@@ -8,35 +8,13 @@ const https = require("https")
 const { signupModel } = require('../models/signupModel'); 
 const { ledgerModel, btcModel } = require('../models/btcModel');
 const { transactionModel } = require('../models/transactionModel'); // optional if you use separate transactionModel
+const { getBTCPriceUSD, getCachedBTCPrice } = require('../utilis/btcPrice');
 
 
 
 const SYSTEM_ACCOUNT_ID = process.env.SYSTEM_ACCOUNT_ID;
 
 
-let cachedBTCPrice = null
-let lastPriceFetch = 0
-
-async function getBTCPriceUSD() {
-  const now = Date.now()
-
-  if(cachedBTCPrice && now - lastPriceFetch < 30000){
-    return cachedBTCPrice
-  }
-  const url = "https://api.coinbase.com/v2/prices/BTC-USD/spot"
-  const res = await axios.get(url, {
-    timeout: 10000
-  });
-
-
-  const price = Number(res.data.data.amount)
-
-  cachedBTCPrice = price
-  lastPriceFetch = now
-  
-
-  return price
-}
 
 /**
  * Helper: convert mongoose Decimal128 (or number) -> JS Number
@@ -283,18 +261,20 @@ const processWithdrawal = async (req, res) => {
 const getPrice = async (req, res) => {
   try {
     const price = await getBTCPriceUSD();
-    return res.json({ bitcoin: { usd: price } });
+    res.json({ bitcoin: { usd: price } });
   } catch (err) {
     console.error("BTC price error:", err.message);
 
-    if(cachedBTCPrice) {
+
+    const cached = getCachedBTCPrice()
+    if(cached) {
       return res.json({
-        bitcoin: {usd: cachedBTCPrice},
+        bitcoin: {usd: cached},
         cached: true
       })
     }
     res.status(503).json({
-      message: "Btc prie temporary unavailable"
+      message: "Btc price temporary unavailable"
     })
   }
 };
