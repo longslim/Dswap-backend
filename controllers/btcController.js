@@ -23,7 +23,7 @@ async function getBTCPriceUSD() {
   if(cachedBTCPrice && now - lastPriceFetch < 30000){
     return cachedBTCPrice
   }
-  const url = `${process.env.COINGECKO_API_BASE || 'https://api.coingecko.com/api/v3'}/simple/price?ids=bitcoin&vs_currencies=usd`;
+  const url = "https://api.coinbase.com/v2/prices/BTC-USD/spot"
   const res = await axios.get(url, {
     timeout: 10000
   });
@@ -406,7 +406,7 @@ const getBTC_OHLC = async (req, res) => {
         if(cachedOHLC && (now-lastfetch < 60000)){
             return res.json(cachedOHLC)
         }
-        const url = "https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=usd&days=1"
+        const url = "https://api.exchange.coinbase.com/products/BTC-USD/candles"
         const response = await axios.get(url)
 
         if (!response.data || !Array.isArray(response.data)){
