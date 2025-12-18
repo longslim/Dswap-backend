@@ -14,10 +14,25 @@ const { transactionModel } = require('../models/transactionModel'); // optional 
 const SYSTEM_ACCOUNT_ID = process.env.SYSTEM_ACCOUNT_ID;
 
 
+let cachedBTCPrice = null
+let lastPriceFetch = 0
+
 async function getBTCPriceUSD() {
+  const now = Date.now()
+
+  if(cachedBTCPrice && now - lastPriceFetch < 30000){
+    return cachedBTCPrice
+  }
   const url = `${process.env.COINGECKO_API_BASE || 'https://api.coingecko.com/api/v3'}/simple/price?ids=bitcoin&vs_currencies=usd`;
-  const res = await axios.get(url);
-  return res.data.bitcoin.usd;
+  const res = await axios.get(url, {
+    timeout: 10000
+  });
+
+  cachedBTCPrice = res.data.bitcoin.usd
+  lastPriceFetch = now
+  
+
+  return cachedBTCPrice
 }
 
 /**
@@ -268,6 +283,16 @@ const getPrice = async (req, res) => {
     return res.json({ bitcoin: { usd: price } });
   } catch (err) {
     return res.status(500).json({ message: err.message });
+
+    if(cachedBTCPrice) {
+      return res.json({
+        bitcoin: {usd: cachedBTCPrice},
+        cached: true
+      })
+    }
+    res.status(503).json({
+      message: "Btc prie temporary unavailable"
+    })
   }
 };
 
@@ -382,7 +407,7 @@ const getBTC_OHLC = async (req, res) => {
             return res.json(cachedOHLC)
         }
         const url = "https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=usd&days=1"
-        const response = await axios.get(url, {httpAgent: agent})
+        const response = await axios.get(url)
 
         if (!response.data || !Array.isArray(response.data)){
             return res.status(500).json({error: "No OHLC data received"})
