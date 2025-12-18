@@ -28,11 +28,14 @@ async function getBTCPriceUSD() {
     timeout: 10000
   });
 
-  cachedBTCPrice = res.data.bitcoin.usd
+
+  const price = Number(res.data.data.amount)
+
+  cachedBTCPrice = price
   lastPriceFetch = now
   
 
-  return cachedBTCPrice
+  return price
 }
 
 /**
@@ -282,7 +285,7 @@ const getPrice = async (req, res) => {
     const price = await getBTCPriceUSD();
     return res.json({ bitcoin: { usd: price } });
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    console.error("BTC price error:", err.message);
 
     if(cachedBTCPrice) {
       return res.json({
