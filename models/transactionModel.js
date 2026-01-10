@@ -103,7 +103,7 @@ const linkedAccountSchema =  mongoose.Schema({
     mask: String,
     accountType: String,
     plaidAccountId: String,
-    access_token: String, // store securely — ideally encrypted
+    access_token: String
   }, { timestamps: true });
 
 const transactionModel = mongoose.model("transaction", transactionSchema)

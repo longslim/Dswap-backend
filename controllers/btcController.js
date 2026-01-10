@@ -7,7 +7,7 @@ const https = require("https")
 
 const { signupModel } = require('../models/signupModel'); 
 const { ledgerModel, btcModel } = require('../models/btcModel');
-const { transactionModel } = require('../models/transactionModel'); // optional if you use separate transactionModel
+const { transactionModel } = require('../models/transactionModel'); 
 const { getBTCPriceUSD, getCachedBTCPrice } = require('../utilis/btcPrice');
 
 
@@ -16,41 +16,32 @@ const SYSTEM_ACCOUNT_ID = process.env.SYSTEM_ACCOUNT_ID;
 
 
 
-/**
- * Helper: convert mongoose Decimal128 (or number) -> JS Number
- */
+
 function decimalToNumber(val) {
   if (val === undefined || val === null) return 0;
-  // If it's a Decimal128 object
+  
   if (typeof val === 'object' && typeof val.toString === 'function') {
     return parseFloat(val.toString());
   }
   return parseFloat(val);
 }
 
-/**
- * Helper: produce a Decimal128 from a JS Number, rounding to 8 decimals
- */
+
 function numberToDecimal128(n) {
-  // ensure numeric
   const asNum = Number(n) || 0;
-  // round to 8 decimals (BTC precision)
   const rounded = asNum.toFixed(8);
   return mongoose.Types.Decimal128.fromString(rounded.toString());
 }
 
-/**
- * Create ledger entry and update user's snapshot balance using Decimal128 for BTC.
- * session optional for transaction atomicity.
- */
+
 async function createLedgerAndUpdateUser({ userId, txId = null, asset, change, kind, metadata = {}, session = null }) {
   const user = await signupModel.findById(userId).session(session);
   if (!user) throw new Error('User not found for ledger');
 
-  // create ledger entry (change stored as Number)
+ 
   const entry = (await ledgerModel.create([{ user: userId, tx: txId, asset, change: Number(change), kind, metadata }], { session }))[0];
 
-  // update snapshot balance
+  
   if (asset === 'BTC') {
     const current = decimalToNumber(user.btcBalance);
     const newBalance = parseFloat((current + Number(change)).toFixed(8));
@@ -61,7 +52,7 @@ async function createLedgerAndUpdateUser({ userId, txId = null, asset, change, k
 
   await user.save({ session });
 
-  // update ledger entry balanceAfter (store as Number)
+  
   const updatedUser = await signupModel.findById(userId).session(session);
   const balanceAfter = asset === 'BTC' ? decimalToNumber(updatedUser.btcBalance) : updatedUser.balance;
   await ledgerModel.findByIdAndUpdate(entry._id, { balanceAfter }, { session });
@@ -69,7 +60,7 @@ async function createLedgerAndUpdateUser({ userId, txId = null, asset, change, k
   return entry;
 }
 
-// Create deposit address and per-user reference via Zero Hash
+
 const createDeposit = async (req, res) => {
   try {
     const userId = req.user && (req.user._id || req.user.id);
@@ -110,7 +101,7 @@ const createDeposit = async (req, res) => {
   }
 };
 
-// Fee rate calculation
+
 async function calculateFeeRateUSD(usdValue) {
   if (usdValue < 100) return 0.05;
   if (usdValue < 1000) return 0.10;
@@ -140,7 +131,7 @@ const requestWithdrawal = async (req, res) => {
     const feeBTC = parseFloat((Number(btcAmount) * feeRate).toFixed(8));
     const netBTC = parseFloat((Number(btcAmount) - feeBTC).toFixed(8));
 
-    // debit full amount from user (reserve) via ledger (this will update user's btcBalance using Decimal128)
+    
     await createLedgerAndUpdateUser({
       userId,
       txId: null,
@@ -151,7 +142,7 @@ const requestWithdrawal = async (req, res) => {
       session
     });
 
-    // credit admin user with fee
+   
     const adminEmail = process.env.ADMIN_ACCOUNT_EMAIL;
     if (adminEmail) {
       const admin = await signupModel.findOne({ email: adminEmail }).session(session);
@@ -170,7 +161,7 @@ const requestWithdrawal = async (req, res) => {
       }
     }
 
-    // create transaction record
+    
     const tx = (await btcModel.create([{
       user: userId,
       type: 'btc_withdrawal',
@@ -228,7 +219,7 @@ const processWithdrawal = async (req, res) => {
     tx.metadata = { ...tx.metadata, zeroHashResponse: sendResp };
     await tx.save({ session });
 
-    // write an internal ledger event (no balance change — user already debited)
+   
     const userAfter = await signupModel.findById(tx.user).session(session);
     const balanceAfterNum = decimalToNumber(userAfter.btcBalance);
 
@@ -279,7 +270,7 @@ const getPrice = async (req, res) => {
   }
 };
 
-async function zeroHashWebhookHandler(req, res) {
+const zeroHashWebhookHandler = async(req, res) => {
   try {
     const event = req.body;
     const type = event.event_type || event.type || event.action;
@@ -302,7 +293,7 @@ async function zeroHashWebhookHandler(req, res) {
       tx.metadata = { ...tx.metadata, zeroHashEvent: event };
       await tx.save();
 
-      // create ledger and update user using Decimal128-safe helper
+      
       await createLedgerAndUpdateUser({
         userId: tx.user,
         txId: tx._id,
@@ -416,26 +407,6 @@ const getBTC_OHLC = async (req, res) => {
     }
 }
 
-// const ohlc = async(req, res) => {
-//     try {
-//         const {symbol = "BTCUSDT", interval = "1m", limit = 200} = req.query
-//         const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
-//         const response = await axios.get(url)
-
-//         const formatted = response.data.map((c) => ({
-//           time: [0],
-//           open: parseFloat(c[1]),
-//           high: parseFloat(c[2]),
-//           low: parseFloat(c[3]),
-//           close: parseFloat(c[4])
-//         }))
-
-//         res.json({symbol, interval, candles: formatted})
-//     } catch (err) {
-//       console.error("OHLC ERROR:", err.message);
-//       res.status(500).json({ error: "Failed to fetch OHLC data" })
-//     }
-// }
 
 
 const buyBtc = async(req, res) => {

@@ -140,7 +140,7 @@ const getReceiverAccountName = async (req, res) => {
 
 const authorizeTransaction = async (req, res) => {
   const { transactionId } = req.params;
-  const { action } = req.body; // action = "authorize" or "decline"
+  const { action } = req.body; 
 
   try {
     const transaction = await transactionModel.findById(transactionId);
@@ -153,7 +153,7 @@ const authorizeTransaction = async (req, res) => {
       transaction.status = "authorized";
       await transaction.save();
 
-      // optionally, update user balance
+      
       const sender = await userModel.findById(transaction.sender);
       const receiver = await userModel.findById(transaction.receiver);
 
@@ -353,17 +353,17 @@ const externalTransfer = async (req, res) => {
   const { access_token, account_id, amount, description } = req.body;
 
   try {
-    // 1️⃣ Get Account + Numbers
+    
     const authResponse = await client.authGet({ access_token });
     const account = authResponse.data.accounts.find(acc => acc.account_id === account_id);
 
     if (!account) return res.status(400).json({ msg: "Account not found" });
 
-    // 2️⃣ Get funding source details
+    
     const routing = authResponse.data.numbers.ach[0].routing;
     const accountNum = authResponse.data.numbers.ach[0].account;
 
-    // 3️⃣ Create transfer authorization
+   
     const sender = await signupModel.findById(req.user._id);
 
     const authorization = await client.transferAuthorizationCreate({
@@ -380,7 +380,7 @@ const externalTransfer = async (req, res) => {
     });
 
 
-    // 4️⃣ Create the transfer
+    
     const transfer = await client.transferCreate({
       access_token,
       account_id,
@@ -390,7 +390,7 @@ const externalTransfer = async (req, res) => {
     });
 
 
-    // After transfer is created
+   
       const transaction = new externalTransactionModel({
         user: req.user._id,
         plaidTransferId: transfer.data.transfer.id,

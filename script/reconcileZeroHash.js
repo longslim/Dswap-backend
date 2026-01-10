@@ -3,8 +3,9 @@ const fs = require('fs');
 const mongoose = require('mongoose');
 const { signupModel } = require('../models/signupModel');
 const { LedgerEntry } = require('../models/btcModel');
-const { getPlatformBalances } = require('../lib/zerohashClient'); // returns platform vault balances
+const { getPlatformBalances } = require('../lib/zerohashClient'); 
 const { Parser } = require('json2csv');
+
 
 async function run() {
   await mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -24,11 +25,11 @@ async function run() {
     }
   }
 
-  // fetch ZeroHash platform balances (adapt parsing to your response)
+  
   let vaultTotal = null;
   try {
     const resp = await getPlatformBalances();
-    // resp parsing may vary; try to extract BTC total
+    
     vaultTotal = resp && (resp.total_btc || resp.balances && resp.balances.BTC || JSON.stringify(resp));
   } catch (err) {
     console.error('Error fetching ZeroHash platform balances', err.message || err);

@@ -151,14 +151,14 @@ const listDeposits = async (req, res) => {
         return res.status(400).json({ success: false, msg: "Deposit already processed" });
       }
   
-      // update deposit status
+      
       deposit.status = "completed";
       await deposit.save();
   
-      // credit user balance
+     
       const user = await signupModel.findById(deposit.user);
       if (!user) {
-        // revert deposit status if user missing
+        
         deposit.status = "failed";
         await deposit.save();
         return res.status(404).json({ success: false, msg: "User not found for deposit" });
@@ -167,7 +167,7 @@ const listDeposits = async (req, res) => {
       user.balance += deposit.amount;
       await user.save()
   
-      // create transaction record (so deposits appear in transaction history)
+     
 
       await transactionModel.findOneAndUpdate(
         { reference: deposit.reference },
@@ -197,7 +197,7 @@ const listDeposits = async (req, res) => {
       deposit.rejectionReason = reason || "Rejected by admin";
       await deposit.save();
   
-      // update related transaction (if created earlier)
+      
       await transactionModel.findOneAndUpdate(
         { reference: deposit.reference },
         { status: "failed", description: `Cheque deposit rejected: ${deposit.rejectionReason}` }

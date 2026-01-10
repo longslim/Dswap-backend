@@ -28,7 +28,7 @@ async function verifyUser(req, res, next) {
     req.user.role = verified.role || user.role
     next();
   } catch (err) {
-    console.error("JWT Error:", err.message);
+    //console.error("JWT Error:", err.message);
     let message = "Not authorized, token failed";
     if (err.name === "TokenExpiredError") {
       message = "Session expired, please sign in again";

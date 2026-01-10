@@ -6,7 +6,7 @@ const { sendEmail } = require("../utilis/mail");
 
 
 cron.schedule("0 0 * * *", async () => {
-  console.log("Running monthly loan deduction job...");
+  //console.log("Running monthly loan deduction job...");
 
   const today = new Date();
 
@@ -21,7 +21,7 @@ cron.schedule("0 0 * * *", async () => {
     if (!user) continue;
 
     if (user.balance < loan.monthlyPayment) {
-      console.log(`User ${user._id} does not have enough balance`);
+      //console.log(`User ${user._id} does not have enough balance`);
       continue;
     }
 
@@ -55,6 +55,6 @@ cron.schedule("0 0 * * *", async () => {
         `Your account has been charged $${loan.monthlyPayment} for your monthly loan repayment`
     )
 
-    console.log(`Monthly payment deducted for Loan ${loan._id}`);
+    //console.log(`Monthly payment deducted for Loan ${loan._id}`);
   }
 });

@@ -2,7 +2,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-// Create uploads directory safely
+
 const uploadDir = path.join(__dirname, "..", "uploads");
 
 if (!fs.existsSync(uploadDir)) {
@@ -24,7 +24,7 @@ const storage = multer.diskStorage({
   },
 });
 
-// File type validation
+
 const fileFilter = (req, file, cb) => {
   const allowedTypes = /jpeg|jpg|png|pdf/;
   const ext = path.extname(file.originalname).toLowerCase();

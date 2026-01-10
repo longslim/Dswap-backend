@@ -184,7 +184,7 @@ const signupUser = async(req, res) => {
 
         const savedUser = await newUser.save()
 
-        //const token = generateToken(savedUser._id)
+        
 
         const token = generateToken(savedUser)
 
@@ -205,7 +205,7 @@ const signupUser = async(req, res) => {
             token
         })
     } catch (err) {
-       console.log(err.message)
+       //console.log(err.message)
        let error = errorHandler(err)
        res.status(400).json({
         success: false,
@@ -276,7 +276,7 @@ const loginUser = async (req, res) => {
       token,
     });
   } catch (err) {
-    console.error("Login Error:", err.message);
+    //console.error("Login Error:", err.message);
     const error = errorHandler(err);
     res.status(400).json({
       success: false,
@@ -300,7 +300,7 @@ const logoutUser = async (req, res) => {
       message: "User logged out successfully",
     });
   } catch (err) {
-    console.error(err.message);
+    //console.error(err.message);
     res.status(500).json({
       success: false,
       message: "Server error during logout",
@@ -349,7 +349,7 @@ const createAdmin = async (req, res) => {
       lastname,
       email,
       password: hashedPassword,
-      role: "admin", // 👈 set role to admin
+      role: "admin", 
       dob: parsedDate.toDate(),
       mobileNo: "0000000000",
       address: "Head Office",
@@ -375,7 +375,7 @@ const createAdmin = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error("Error creating admin:", err.message);
+    //console.error("Error creating admin:", err.message);
     res.status(500).json({
       success: false,
       message: "Error creating admin.",
@@ -663,7 +663,7 @@ const changePin = async (req, res) => {
       });
     }
 
-    // ✅ FIX: findById + select cardPin
+    
     const user = await signupModel
       .findById(userId)
       .select("+cardPin");
@@ -724,13 +724,13 @@ const getCardDetails = async (req, res) => {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    // Verify PIN
+    
     const valid = await bcrypt.compare(cardPin, user.cardPin);
     if (!valid) {
       return res.status(400).json({ success: false, message: "Incorrect PIN" });
     }
 
-    // PIN correct → return sensitive values
+    
     return res.status(200).json({
       success: true,
       cardNumber: user.cardNumber,

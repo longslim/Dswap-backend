@@ -4,7 +4,7 @@ require("dotenv").config();
 
 const createSystemAccount = async () => {
   try {
-    // ✅ connect once using your helper
+    
     await connectDB();
 
     const existing = await signupModel.findOne({ isSystem: true });
