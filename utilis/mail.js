@@ -40,7 +40,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const sendEmail = async (to, subject, html) => {
   try {
     const { error } = await resend.emails.send({
-      from: "Bank App <no-reply@resend.dev>", //no-reply@yourdomain.com
+      from: "Dswap <onboarding@resend.dev>", //no-reply@yourdomain.com
       to,
       subject,
       html,
